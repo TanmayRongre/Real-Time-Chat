@@ -20,6 +20,9 @@ const transporter = hasSmtpConfig
           user: env.SMTP_USER,
           pass: env.SMTP_PASS, // 16-character App Password (not Gmail login password)
         },
+        connectionTimeout: 8000,
+        greetingTimeout: 8000,
+        socketTimeout: 10000,
       })
     : nodemailer.createTransport({
         host: env.SMTP_HOST || "smtp.gmail.com",
@@ -29,6 +32,9 @@ const transporter = hasSmtpConfig
           user: env.SMTP_USER,
           pass: env.SMTP_PASS,
         },
+        connectionTimeout: 8000,
+        greetingTimeout: 8000,
+        socketTimeout: 10000,
       })
   : null;
 

@@ -134,10 +134,14 @@ export const AuthPage: React.FC = () => {
 
     setIsSubmitting(true);
     try {
-      await api.post<AuthResponse>("/auth/send-otp", {
+      const res = await api.post<AuthResponse & { devOtp?: string }>("/auth/send-otp", {
         email: trimmedEmail,
         name: name.trim() || undefined,
       });
+
+      if (res.data?.devOtp) {
+        console.log(`%c[Dev OTP]: ${res.data.devOtp}`, "color: #10b981; font-weight: bold; font-size: 14px;");
+      }
 
       toast.success("Verification code dispatched to your email");
       setResendCooldown(30);

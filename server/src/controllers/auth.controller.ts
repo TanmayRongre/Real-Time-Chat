@@ -69,13 +69,21 @@ export const sendOtp = async (req: Request, res: Response): Promise<void> => {
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
 
-    // Send email or log fallback
-    await sendOtpEmail(email, rawOtp);
+    // Prominently log OTP to server console for instant reference/debugging
+    console.log(`\n======================================================`);
+    console.log(`🔑 [OTP GENERATED] Email: ${email} | Code: ${rawOtp}`);
+    console.log(`======================================================\n`);
+
+    // Dispatch email asynchronously in background so client UI transitions instantly (< 30ms)
+    sendOtpEmail(email, rawOtp).catch((err) => {
+      console.error(`[Background Mailer Error for ${email}]:`, err?.message || err);
+    });
 
     res.status(200).json({
       success: true,
       message: "Verification code sent successfully",
       isExistingUser,
+      ...(process.env.NODE_ENV !== "production" ? { devOtp: rawOtp } : {}),
     });
   } catch (error: any) {
     console.error("[sendOtp Error]", error);
