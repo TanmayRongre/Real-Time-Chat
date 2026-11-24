@@ -123,7 +123,40 @@ export const sendOtpEmail = async (
     </html>
   `;
 
-  // 1. Resend HTTPS REST API (Port 443 - Bypasses all Render free-tier SMTP blocks)
+  // 1. Brevo HTTPS REST API (Port 443 - Sends to ANY email address in the world for FREE without requiring a custom domain)
+  if (env.BREVO_API_KEY) {
+    try {
+      const response = await fetch("https://api.brevo.com/v3/smtp/email", {
+        method: "POST",
+        headers: {
+          "api-key": env.BREVO_API_KEY,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          sender: {
+            name: "LiveChat",
+            email: env.SMTP_USER || "tanmayrongre2008@gmail.com",
+          },
+          to: [{ email }],
+          subject: `${otp} is your LiveChat verification code`,
+          htmlContent,
+        }),
+      });
+
+      if (response.ok) {
+        console.log(`[Brevo API] Verification email successfully delivered to ${email}`);
+        return true;
+      } else {
+        const errData = await response.text();
+        console.warn(`[Brevo API Warning] (${response.status}):`, errData);
+      }
+    } catch (brevoErr) {
+      console.warn("[Brevo API Network Error]", brevoErr);
+    }
+  }
+
+  // 2. Resend HTTPS REST API (Port 443 - Bypasses all Render free-tier SMTP blocks)
   if (env.RESEND_API_KEY) {
     try {
       const response = await fetch("https://api.resend.com/emails", {
