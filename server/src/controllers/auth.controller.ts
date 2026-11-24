@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import mongoose from "mongoose";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -34,6 +35,14 @@ export const sendOtp = async (req: Request, res: Response): Promise<void> => {
 
     const { email } = parsed.data;
 
+    // Verify database connection readiness
+    if (mongoose.connection.readyState !== 1) {
+      res.status(503).json({
+        error: "Database connection failed. Please ensure your IP is whitelisted in MongoDB Atlas (Network Access -> Add IP -> Allow Access from Anywhere 0.0.0.0/0).",
+      });
+      return;
+    }
+
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     const isExistingUser = Boolean(existingUser);
@@ -68,9 +77,9 @@ export const sendOtp = async (req: Request, res: Response): Promise<void> => {
       message: "Verification code sent successfully",
       isExistingUser,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("[sendOtp Error]", error);
-    res.status(500).json({ error: "Failed to process OTP request" });
+    res.status(500).json({ error: error?.message || "Failed to process OTP request" });
   }
 };
 
