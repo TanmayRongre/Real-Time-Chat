@@ -42,15 +42,6 @@ export const sendOtpEmail = async (
   email: string,
   otp: string,
 ): Promise<boolean> => {
-  // Developer Fallback: When real SMTP credentials are not yet configured
-  if (!transporter) {
-    console.log(`\n======================================================`);
-    console.log(`[DEV OTP FALLBACK - Add real SMTP credentials in server/.env]`);
-    console.log(`Email: ${email} -> OTP Code: ${otp}`);
-    console.log(`======================================================\n`);
-    return true;
-  }
-
   const htmlContent = `
     <!DOCTYPE html>
     <html lang="en">
@@ -131,6 +122,44 @@ export const sendOtpEmail = async (
     </body>
     </html>
   `;
+
+  // 1. Resend HTTPS REST API (Port 443 - Bypasses all Render free-tier SMTP blocks)
+  if (env.RESEND_API_KEY) {
+    try {
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "LiveChat <onboarding@resend.dev>",
+          to: [email],
+          subject: `${otp} is your LiveChat verification code`,
+          html: htmlContent,
+        }),
+      });
+
+      if (response.ok) {
+        console.log(`[Resend API] Verification email delivered successfully to ${email}`);
+        return true;
+      } else {
+        const errData = await response.text();
+        console.warn(`[Resend API Warning] Failed to send via Resend (${response.status}):`, errData);
+      }
+    } catch (resendErr) {
+      console.warn("[Resend API Network Error]", resendErr);
+    }
+  }
+
+  // Developer Fallback: When real SMTP credentials are not yet configured
+  if (!transporter) {
+    console.log(`\n======================================================`);
+    console.log(`[DEV OTP FALLBACK - Add real SMTP credentials in server/.env]`);
+    console.log(`Email: ${email} -> OTP Code: ${otp}`);
+    console.log(`======================================================\n`);
+    return true;
+  }
 
   try {
     const info = await transporter.sendMail({

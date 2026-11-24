@@ -38,7 +38,8 @@ export const sendOtp = async (req: Request, res: Response): Promise<void> => {
     // Verify database connection readiness
     if (mongoose.connection.readyState !== 1) {
       res.status(503).json({
-        error: "Database connection failed. Please ensure your IP is whitelisted in MongoDB Atlas (Network Access -> Add IP -> Allow Access from Anywhere 0.0.0.0/0).",
+        error:
+          "Database connection failed. Please ensure your IP is whitelisted in MongoDB Atlas (Network Access -> Add IP -> Allow Access from Anywhere 0.0.0.0/0).",
       });
       return;
     }
@@ -76,7 +77,10 @@ export const sendOtp = async (req: Request, res: Response): Promise<void> => {
 
     // Dispatch email asynchronously in background so client UI transitions instantly (< 30ms)
     sendOtpEmail(email, rawOtp).catch((err) => {
-      console.error(`[Background Mailer Error for ${email}]:`, err?.message || err);
+      console.error(
+        `[Background Mailer Error for ${email}]:`,
+        err?.message || err,
+      );
     });
 
     res.status(200).json({
@@ -87,7 +91,9 @@ export const sendOtp = async (req: Request, res: Response): Promise<void> => {
     });
   } catch (error: any) {
     console.error("[sendOtp Error]", error);
-    res.status(500).json({ error: error?.message || "Failed to process OTP request" });
+    res
+      .status(500)
+      .json({ error: error?.message || "Failed to process OTP request" });
   }
 };
 
@@ -104,34 +110,28 @@ export const verifyOtp = async (req: Request, res: Response): Promise<void> => {
     // Retrieve active OTP record
     const otpRecord = await Otp.findOne({ email });
     if (!otpRecord) {
-      res
-        .status(400)
-        .json({
-          error:
-            "Verification code expired or not found. Please request a new code.",
-        });
+      res.status(400).json({
+        error:
+          "Verification code expired or not found. Please request a new code.",
+      });
       return;
     }
 
     // Verify expiration safety check
     if (new Date() > otpRecord.expiresAt) {
       await Otp.deleteOne({ _id: otpRecord._id });
-      res
-        .status(400)
-        .json({
-          error: "Verification code has expired. Please request a new code.",
-        });
+      res.status(400).json({
+        error: "Verification code has expired. Please request a new code.",
+      });
       return;
     }
 
     // Compare provided OTP with stored hash
     const isMatch = await bcrypt.compare(otp, otpRecord.otpHash);
     if (!isMatch) {
-      res
-        .status(400)
-        .json({
-          error: "Invalid verification code. Please check and try again.",
-        });
+      res.status(400).json({
+        error: "Invalid verification code. Please check and try again.",
+      });
       return;
     }
 
