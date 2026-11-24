@@ -50,7 +50,7 @@ const PORT = parseInt(env.PORT, 10) || 5000;
 if (process.env.NODE_ENV !== "test") {
   httpServer.listen(PORT, () => {
     console.log(
-      `[Server] Running on port ${PORT} in ${process.env.NODE_ENV || env.NODE_ENV || "development"} mode`
+      `[Server] Running on port ${PORT} in ${process.env.NODE_ENV || env.NODE_ENV || "development"} mode`,
     );
     // Initialize Render Keep-Alive self-ping in production
     startKeepAlive();
