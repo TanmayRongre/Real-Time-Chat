@@ -20,9 +20,10 @@ jobs:
           distribution: "temurin"
           java-version: "17"
 
-      - name: Accept Android SDK Licenses
+      - name: Accept Android SDK Licenses & Install Platform 36
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" || true
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -50,7 +51,7 @@ jobs:
       - name: Build Debug APK with Gradle
         run: |
           cd client/android
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          ./gradlew assembleDebug --no-daemon --stacktrace --console=plain
 
       - name: Upload Debug APK Artifact
         uses: actions/upload-artifact@v4
