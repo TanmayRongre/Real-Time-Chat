@@ -10,6 +10,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/core": "^8.6.2",
     "@gsap/react": "^2.1.2",
     "axios": "^1.7.9",
     "clsx": "^2.1.1",
@@ -23,6 +25,7 @@
     "tailwind-merge": "^3.0.2"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.6.2",
     "@tailwindcss/vite": "^4.0.9",
     "@types/node": "^22.13.4",
     "@types/react": "^18.3.18",
@@ -33,4 +36,3 @@
     "vite": "^6.2.0"
   }
 }
-
