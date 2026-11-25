@@ -26,8 +26,18 @@ export const isOriginAllowed = (origin: string | undefined): boolean => {
     return true;
   }
 
-  // 3. Allow localhost / 127.0.0.1 on any port for local development
-  if (/^http:\/\/localhost(:\d+)?$/.test(normalizedOrigin) || /^http:\/\/127\.0\.0\.1(:\d+)?$/.test(normalizedOrigin)) {
+  // 3. Allow localhost / 127.0.0.1 on any port (http or https)
+  if (/^https?:\/\/localhost(:\d+)?$/.test(normalizedOrigin) || /^https?:\/\/127\.0\.0\.1(:\d+)?$/.test(normalizedOrigin)) {
+    return true;
+  }
+
+  // 4. Allow Capacitor and Ionic mobile app origins
+  if (
+    normalizedOrigin === "capacitor://localhost" ||
+    normalizedOrigin === "ionic://localhost" ||
+    /^capacitor:\/\//.test(normalizedOrigin) ||
+    /^ionic:\/\//.test(normalizedOrigin)
+  ) {
     return true;
   }
 
@@ -45,7 +55,7 @@ export const corsOriginValidator = (
     callback(null, true);
   } else {
     console.warn(`[CORS Blocked] Request origin not allowed: ${origin}`);
-    callback(new Error(`CORS policy does not allow access from origin: ${origin}`));
+    callback(null, false);
   }
 };
 
